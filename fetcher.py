@@ -90,15 +90,23 @@ def _extract_report_params(html: str) -> tuple[str, str]:
     return session_match.group(1), control_match.group(1)
 
 
-def _fetch_report_html(s: requests.Session, report_session: str, control_id: str) -> str:
+def _fetch_report_html(s: requests.Session, report_session: str, control_id: str, debug: bool = False) -> str:
     """Step 4: GET the actual report HTML."""
     url = (
         f"{BASE_URL}{VIEWER_PATH}"
-        f"?OpType=ReportArea&ZoomMode=FullPage"
-        f"&ReportSession={report_session}&ControlID={control_id}"
+        f"?ReportSession={report_session}"
+        f"&ControlID={control_id}"
+        f"&Culture=1037&UICulture=1037&ReportStack=1"
+        f"&OpType=ReportArea"
+        f"&Controller=uctlReportControl_MainReportViewer"
+        f"&Mode=true&ZoomMode=FullPage"
     )
     r = s.get(url, timeout=30)
     r.raise_for_status()
+    if debug:
+        with open("report.html", "w", encoding="utf-8") as f:
+            f.write(r.text)
+        log.info("Saved report HTML to report.html (%d bytes)", len(r.text))
     return r.text
 
 

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>יומן דיונים — בית הדין האזורי רחובות</title>
+<style>
+:root {
+  --navy:    #0f2742;
+  --navy2:   #1a3d60;
+  --navy3:   #2a5580;
+  --gold:    #b8902a;
+  --gold2:   #d4aa40;
+  --gold-lit:#fff9ed;
+  --parch:   #f5f0e8;
+  --parch2:  #ede7d9;
+  --parch3:  #e0d8c8;
+  --surface: #ffffff;
+  --border:  #d4ccba;
+  --border2: #bbb0a0;
+  --text:    #1a1612;
+  --text2:   #4a4038;
+  --text3:   #8a8070;
+  --ha:      #1a4f9a;
+  --ha-bg:   #e6eef8;
+  --hb:      #9a1a1a;
+  --hb-bg:   #f8e6e6;
+  --hg:      #1a6b3a;
+  --hg-bg:   #e6f4ec;
+  --r:8px; --rs:5px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI','Arial Hebrew',Arial,sans-serif;background:var(--parch);color:var(--text);direction:rtl;font-size:14px;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* TOP BAR */
+.topbar{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);border-bottom:3px solid var(--gold);color:#fff;height:58px;display:flex;align-items:center;padding:0 20px;gap:14px;flex-shrink:0;box-shadow:0 3px 12px rgba(0,0,0,.35);z-index:100;}
+.tb-emblem{width:36px;height:36px;border:2px solid var(--gold2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(255,255,255,.06);}
+.tb-title{font-size:16px;font-weight:700;}
+.tb-sub{font-size:10px;opacity:.6;margin-top:1px;letter-spacing:.5px;}
+.tb-sep{width:1px;height:28px;background:rgba(255,255,255,.2);}
+.tb-stat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);padding:4px 14px;border-radius:20px;font-size:12px;white-space:nowrap;}
+.tb-space{flex:1;}
+
+/* TOOLBAR */
+.toolbar{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:9px;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.tb-nav{background:none;border:1px solid var(--border2);border-radius:var(--rs);padding:5px 14px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--text2);transition:all .12s;}
+.tb-nav:hover{background:var(--parch);border-color:var(--navy3);color:var(--navy);}
+.tb-month{font-size:15px;font-weight:700;color:var(--navy);min-width:170px;text-align:center;}
+.tb-sp{flex:1;}
+.vbtn-grp{display:flex;border:1px solid var(--border2);border-radius:var(--rs);overflow:hidden;}
+.vbtn{padding:5px 14px;background:var(--surface);border:none;border-left:1px solid var(--border2);font-size:12px;cursor:pointer;font-family:inherit;color:var(--text2);transition:all .12s;}
+.vbtn:first-child{border-left:none;}
+.vbtn:hover{background:var(--parch);}
+.vbtn.on{background:var(--navy);color:#fff;font-weight:600;}
+.bc-today{padding:5px 12px;background:none;border:1px solid var(--border2);border-radius:var(--rs);font-size:12px;cursor:pointer;font-family:inherit;color:var(--text2);transition:all .12s;}
+.bc-today:hover{background:var(--parch);}
+
+/* BREADCRUMB */
+.breadcrumb{background:var(--gold-lit);border-bottom:1px solid #e8d89a;padding:6px 16px;display:none;align-items:center;gap:8px;font-size:12px;flex-shrink:0;}
+.breadcrumb.visible{display:flex;}
+.bc-link{color:var(--navy3);cursor:pointer;text-decoration:underline;text-decoration-color:transparent;}
+.bc-link:hover{text-decoration-color:var(--navy3);}
+.bc-sep{color:var(--text3);}
+.bc-cur{color:var(--text2);font-weight:600;}
+.bc-back{margin-right:auto;background:var(--navy);color:#fff;border:none;padding:4px 12px;border-radius:var(--rs);font-size:12px;cursor:pointer;font-family:inherit;}
+.bc-back:hover{background:var(--navy2);}
+
+/* SCROLL */
+.cal-area{flex:1;overflow:auto;}
+
+/* MONTH VIEW */
+.month-wrap{padding:12px;}
+.month-grid{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);}
+.mg-head{display:grid;grid-template-columns:repeat(7,1fr);background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);border-bottom:2px solid var(--gold);}
+.mg-dow{padding:9px 4px;text-align:center;font-size:11px;font-weight:700;color:rgba(255,255,255,.85);letter-spacing:.5px;}
+.mg-body{display:grid;grid-template-columns:repeat(7,1fr);}
+.mg-cell{border-right:1px solid var(--border);border-bottom:1px solid var(--border);min-height:100px;padding:5px 6px;cursor:default;transition:background .12s;overflow:hidden;}
+.mg-cell:nth-child(7n){border-right:none;}
+.mg-cell.has{cursor:pointer;}
+.mg-cell.has:hover{background:#f5f2eb;}
+.mg-cell.other{background:#faf8f3;opacity:.55;}
+.mg-cell.today{background:#fffaed;}
+.mg-cell.selected{background:var(--ha-bg)!important;box-shadow:inset 0 0 0 2px var(--navy);}
+.cell-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;}
+.cell-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--text2);}
+.today .cell-num{background:var(--navy);color:#fff;}
+.cell-count{font-size:9px;color:var(--text3);margin-bottom:3px;font-weight:600;}
+.cell-pill{font-size:11px;padding:4px 8px;border-radius:4px;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between;font-weight:600;white-space:nowrap;}
+.pill-א{background:var(--ha);color:#fff;}
+.pill-ב{background:var(--hb);color:#fff;}
+.pill-ג{background:var(--hg);color:#fff;}
+.pill-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.6);flex-shrink:0;}
+
+/* DAY VIEW */
+.day-wrap{padding:14px 16px;}
+.day-banner{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);border-radius:var(--r) var(--r) 0 0;padding:14px 20px;color:#fff;display:flex;align-items:center;gap:18px;border-bottom:2px solid var(--gold);}
+.db-num{font-size:40px;font-weight:700;line-height:1;min-width:55px;text-align:center;}
+.db-info{flex:1;}
+.db-name{font-size:18px;font-weight:700;}
+.db-summary{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.db-badge{font-size:11px;padding:3px 11px;border-radius:20px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);}
+.db-badge.ba{background:rgba(26,79,154,.3);border-color:rgba(26,79,154,.5);}
+.db-badge.bb{background:rgba(154,26,26,.3);border-color:rgba(154,26,26,.5);}
+.db-badge.bg{background:rgba(26,107,58,.3);border-color:rgba(26,107,58,.5);}
+.day-cols{background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);display:flex;min-height:200px;box-shadow:0 4px 12px rgba(0,0,0,.08);}
+.hall-col{flex:1;min-width:0;border-left:1px solid var(--border);}
+.hall-col:last-child{border-left:none;}
+.hall-hdr{padding:10px 14px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.hh-א{background:var(--ha-bg);color:var(--ha);}
+.hh-ב{background:var(--hb-bg);color:var(--hb);}
+.hh-ג{background:var(--hg-bg);color:var(--hg);}
+.hall-cnt{background:var(--surface);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;}
+.case-row{padding:10px 14px;border-bottom:1px solid var(--parch2);cursor:pointer;display:flex;gap:11px;align-items:flex-start;transition:background .1s;}
+.case-row:last-child{border-bottom:none;}
+.case-row:hover{background:var(--gold-lit);}
+.cr-time{font-size:16px;font-weight:700;color:var(--navy);min-width:46px;text-align:center;flex-shrink:0;font-variant-numeric:tabular-nums;}
+.cr-div{width:1px;background:var(--parch3);align-self:stretch;flex-shrink:0;}
+.cr-body{flex:1;min-width:0;}
+.cr-subj{font-size:13px;font-weight:700;color:var(--text);}
+.cr-parties{font-size:12px;color:var(--text2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cr-tik{font-size:10px;color:var(--text3);margin-top:3px;font-family:'Courier New',monospace;}
+.no-cases{padding:28px 16px;text-align:center;color:var(--text3);font-size:12px;}
+
+/* MODAL */
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(2px);}
+.mbg.open{display:flex;}
+.modal{background:var(--surface);border-radius:var(--r);max-width:440px;width:92%;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 16px 48px rgba(0,0,0,.28);border-top:4px solid var(--gold);}
+.m-hdr{background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 100%);padding:14px 18px;color:#fff;display:flex;align-items:flex-start;gap:12px;}
+.m-hdr-info{flex:1;}
+.m-title{font-size:15px;font-weight:700;}
+.m-time{font-size:20px;font-weight:700;margin-top:4px;opacity:.9;}
+.m-x{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:50%;width:28px;height:28px;color:#fff;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.m-x:hover{background:rgba(255,255,255,.25);}
+.m-body{padding:16px 18px;overflow-y:auto;}
+.m-row{display:flex;gap:10px;margin-bottom:9px;font-size:13px;align-items:baseline;}
+.m-k{color:var(--text3);min-width:80px;flex-shrink:0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+.m-v{color:var(--text);font-weight:600;}
+
+/* FILTER BUTTONS */
+.asm-btn{padding:4px 12px;border-radius:20px;border:2px solid transparent;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;opacity:.4;}
+.asm-btn.on{opacity:1;}
+.asm-btn-א{background:var(--ha);color:#fff;border-color:var(--ha);}
+.asm-btn-ב{background:var(--hb);color:#fff;border-color:var(--hb);}
+.asm-btn-ג{background:var(--hg);color:#fff;border-color:var(--hg);}
+/* ERROR */
+.err-bar{background:#8a1a1a;color:#fff;padding:8px 16px;font-size:12px;flex-shrink:0;}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="tb-emblem">⚖</div>
+  <div>
+    <div class="tb-title">יומן דיונים — {{ court_name }}</div>
+    <div class="tb-sub">מערכת ניהול ישיבות</div>
+  </div>
+  <div class="tb-sep"></div>
+  <div class="tb-stat" id="stat-total">סה"כ {{ total }} דיונים</div>
+  <div class="tb-space"></div>
+  <div style="display:flex;align-items:center;gap:10px;font-size:12px;">
+    <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;border-radius:2px;background:var(--ha);display:inline-block;"></span> אולם א</span>
+    <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;border-radius:2px;background:var(--hb);display:inline-block;"></span> אולם ב</span>
+    <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;border-radius:2px;background:var(--hg);display:inline-block;"></span> אולם ג</span>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <a href="?year={{ prev_year }}&month={{ prev_month }}" style="text-decoration:none;">
+    <button class="tb-nav">›</button>
+  </a>
+  <div class="tb-month">{{ month_name }}</div>
+  <a href="?year={{ next_year }}&month={{ next_month }}" style="text-decoration:none;">
+    <button class="tb-nav">‹</button>
+  </a>
+  <a href="?year={{ year }}&month={{ month }}" style="text-decoration:none;">
+    <button class="bc-today">היום</button>
+  </a>
+  <div class="tb-sp"></div>
+  <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text3);margin-left:4px;">סינון:</div>
+  <div id="assembly-filters" style="display:flex;gap:4px;"></div>
+  <div class="vbtn-grp">
+    <button class="vbtn on" id="btn-month" onclick="setView('month')">חודש</button>
+    <button class="vbtn" id="btn-day" onclick="setView('day')" style="display:none" id="btn-day-view">יום</button>
+  </div>
+</div>
+
+<!-- BREADCRUMB (shown in day view) -->
+<div class="breadcrumb" id="breadcrumb">
+  <span class="bc-link" onclick="setView('month')">{{ month_name }}</span>
+  <span class="bc-sep">›</span>
+  <span class="bc-cur" id="bc-date-label"></span>
+  <button class="bc-back" onclick="setView('month')">← חזרה לחודש</button>
+</div>
+
+{% if error %}
+<div class="err-bar">שגיאה בטעינת הנתונים: {{ error }}</div>
+{% endif %}
+
+<!-- SCROLL AREA -->
+<div class="cal-area">
+
+  <!-- MONTH VIEW -->
+  <div id="view-month" class="month-wrap">
+    <div class="month-grid">
+      <div class="mg-head">
+        <div class="mg-dow">ראשון</div>
+        <div class="mg-dow">שני</div>
+        <div class="mg-dow">שלישי</div>
+        <div class="mg-dow">רביעי</div>
+        <div class="mg-dow">חמישי</div>
+        <div class="mg-dow">שישי</div>
+        <div class="mg-dow">שבת</div>
+      </div>
+      <div class="mg-body">
+        {% for week in weeks %}
+          {% for day in week %}
+          <div class="mg-cell {% if not day.in_month %}other{% endif %} {% if day.is_today %}today{% endif %} {% if day.hearings %}has{% endif %}"
+               {% if day.hearings %}onclick="openDay('{{ day.date }}')"{% endif %}>
+            <div class="cell-top">
+              <div class="cell-num">{{ day.day }}</div>
+            </div>
+            <div class="pills-wrap" data-date="{{ day.date }}">
+              {% if day.hearings %}
+                <div class="cell-count">מס' דיונים: {{ day.hearings | length }}</div>
+              {% endif %}
+              {% set ns = namespace(shown={}) %}
+              {% for h in day.hearings %}
+                {% if h.assembly not in ns.shown %}
+                  {% set _ = ns.shown.update({h.assembly: true}) %}
+                  {% set cnt = day.hearings | selectattr('assembly','eq',h.assembly) | list | length %}
+                  <div class="cell-pill pill-{{ h.assembly }}">
+                    <span>אולם {{ h.assembly }}: {{ cnt }}</span>
+                    <span class="pill-dot"></span>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- DAY VIEW -->
+  <div id="view-day" class="day-wrap" style="display:none;">
+    <div class="day-banner">
+      <div class="db-num" id="dv-num"></div>
+      <div class="db-info">
+        <div class="db-name" id="dv-name"></div>
+        <div class="db-summary" id="dv-summary"></div>
+      </div>
+    </div>
+    <div class="day-cols" id="dv-cols"></div>
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="mbg" id="mbg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="m-hdr">
+      <div class="m-hdr-info">
+        <div class="m-title" id="m-title"></div>
+        <div class="m-time" id="m-time"></div>
+      </div>
+      <div class="m-x" onclick="closeModal()">✕</div>
+    </div>
+    <div class="m-body" id="m-body"></div>
+  </div>
+</div>
+
+<script>
+const HEARINGS = {{ hearings_json | safe }};
+
+// ── Filters ──────────────────────────────────────────────────────────────────
+const ALL_ASSEMBLIES = [...new Set(HEARINGS.map(h => h.assembly))].sort();
+const activeAssemblies = new Set(ALL_ASSEMBLIES);
+
+function buildFilters() {
+  const container = document.getElementById('assembly-filters');
+  if (!ALL_ASSEMBLIES.length) return;
+  ALL_ASSEMBLIES.forEach(a => {
+    const btn = document.createElement('button');
+    btn.className = `asm-btn asm-btn-${a} on`;
+    btn.textContent = `הרכב ${a}`;
+    btn.onclick = () => toggleAssembly(a, btn);
+    container.appendChild(btn);
+  });
+}
+
+function toggleAssembly(a, btn) {
+  if (activeAssemblies.has(a)) {
+    activeAssemblies.delete(a);
+    btn.classList.remove('on');
+  } else {
+    activeAssemblies.add(a);
+    btn.classList.add('on');
+  }
+  applyFilters();
+}
+
+function filteredHearings(list) {
+  return list.filter(h => activeAssemblies.has(h.assembly));
+}
+
+function applyFilters() {
+  // Update month view pills
+  document.querySelectorAll('.mg-cell').forEach(cell => {
+    const onclick = cell.getAttribute('onclick') || '';
+    const m = onclick.match(/openDay\('(.+?)'\)/);
+    if (!m) return;
+    const dateStr = m[1];
+    const dayHearings = filteredHearings(byDate[dateStr] || []);
+    // Rebuild pills
+    const pillsContainer = cell.querySelector('.pills-wrap');
+    if (!pillsContainer) return;
+    pillsContainer.innerHTML = buildPills(dateStr, dayHearings);
+    // Toggle clickability
+    if (dayHearings.length) {
+      cell.classList.add('has');
+    } else {
+      cell.classList.remove('has');
+      cell.classList.remove('selected');
+    }
+  });
+  // If in day view, re-render
+  if (currentView === 'day' && currentDay) renderDay(currentDay);
+}
+
+// Group by date
+const byDate = {};
+HEARINGS.forEach(h => {
+  if (!byDate[h.date]) byDate[h.date] = [];
+  byDate[h.date].push(h);
+});
+
+buildFilters();
+
+const DAYS_HE =['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+const MONTHS_HE = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+const HALL_COLORS = {'א':'א','ב':'ב','ג':'ג'};
+
+let currentView = 'month';
+let currentDay = null;
+
+function setView(v) {
+  currentView = v;
+  document.getElementById('view-month').style.display = v === 'month' ? '' : 'none';
+  document.getElementById('view-day').style.display = v === 'day' ? '' : 'none';
+  document.getElementById('breadcrumb').classList.toggle('visible', v === 'day');
+  document.getElementById('btn-month').classList.toggle('on', v === 'month');
+  document.getElementById('btn-day').classList.toggle('on', v === 'day');
+  document.getElementById('btn-day').style.display = (v === 'day' || currentDay) ? '' : 'none';
+  // remove selected highlight
+  document.querySelectorAll('.mg-cell.selected').forEach(c => c.classList.remove('selected'));
+  if (v === 'day' && currentDay) renderDay(currentDay);
+}
+
+function openDay(dateStr) {
+  currentDay = dateStr;
+  document.getElementById('btn-day').style.display = '';
+  // highlight cell
+  document.querySelectorAll('.mg-cell.selected').forEach(c => c.classList.remove('selected'));
+  const cells = document.querySelectorAll('.mg-cell');
+  cells.forEach(c => {
+    if (c.getAttribute('onclick') && c.getAttribute('onclick').includes(dateStr))
+      c.classList.add('selected');
+  });
+  setView('day');
+}
+
+function buildPills(dateStr, hearings) {
+  if (!hearings.length) return '';
+  const assemblies = [...new Set(hearings.map(h => h.assembly))].sort();
+  let html = `<div class="cell-count">מס' דיונים: ${hearings.length}</div>`;
+  assemblies.forEach(a => {
+    const cnt = hearings.filter(h => h.assembly === a).length;
+    html += `<div class="cell-pill pill-${a}"><span>אולם ${a}: ${cnt}</span><span class="pill-dot"></span></div>`;
+  });
+  return html;
+}
+
+function renderDay(dateStr) {
+  const parts = dateStr.split('/'); // DD/MM/YYYY
+  const d = new Date(parts[2], parts[1]-1, parts[0]);
+  const dayNum = parseInt(parts[0]);
+  const dow = DAYS_HE[d.getDay()];
+  const monthName = MONTHS_HE[d.getMonth()];
+
+  document.getElementById('dv-num').textContent = dayNum;
+  document.getElementById('dv-name').textContent = `יום ${dow}, ${dayNum} ב${monthName} ${parts[2]}`;
+  document.getElementById('bc-date-label').textContent = `${dayNum} ב${monthName}`;
+
+  const hearings = filteredHearings(byDate[dateStr] || []);
+  // badges
+  const assemblies = [...new Set(hearings.map(h => h.assembly))].sort();
+  const summaryEl = document.getElementById('dv-summary');
+  summaryEl.innerHTML = `<span class="db-badge">${hearings.length} דיונים</span>` +
+    assemblies.map(a => {
+      const cnt = hearings.filter(h => h.assembly === a).length;
+      const cls = a === 'א' ? 'ba' : a === 'ב' ? 'bb' : 'bg';
+      return `<span class="db-badge ${cls}">הרכב ${a} · ${cnt}</span>`;
+    }).join('');
+
+  // columns per assembly
+  const colsEl = document.getElementById('dv-cols');
+  if (assemblies.length === 0) {
+    colsEl.innerHTML = '<div class="no-cases">אין דיונים ביום זה</div>';
+    return;
+  }
+  colsEl.innerHTML = assemblies.map(a => {
+    const rows = hearings.filter(h => h.assembly === a)
+      .sort((x,y) => x.time.localeCompare(y.time));
+    const cls = `hh-${a}`;
+    return `
+      <div class="hall-col">
+        <div class="hall-hdr ${cls}">
+          <span>הרכב ${a} · אולם ${rows[0].hall}</span>
+          <span class="hall-cnt">${rows.length}</span>
+        </div>
+        ${rows.map(h => `
+          <div class="case-row" onclick="openModal(${JSON.stringify(h).replace(/"/g,'&quot;')})">
+            <div class="cr-time">${h.time}</div>
+            <div class="cr-div"></div>
+            <div class="cr-body">
+              <div class="cr-subj">${h.subject}</div>
+              <div class="cr-parties">${h.side_a} נ' ${h.side_b}</div>
+              <div class="cr-tik">תיק ${h.file_number}</div>
+            </div>
+          </div>`).join('')}
+      </div>`;
+  }).join('');
+}
+
+function openModal(h) {
+  document.getElementById('m-title').textContent = h.subject;
+  document.getElementById('m-time').textContent = `${h.time}  |  ${h.date}`;
+  document.getElementById('m-body').innerHTML = `
+    <div class="m-row"><div class="m-k">הרכב</div><div class="m-v">${h.assembly} · אולם ${h.hall}</div></div>
+    <div class="m-row"><div class="m-k">תיק</div><div class="m-v" style="font-family:monospace">${h.file_number}</div></div>
+    <div class="m-row"><div class="m-k">צד א</div><div class="m-v">${h.side_a}</div></div>
+    <div class="m-row"><div class="m-k">צד ב</div><div class="m-v">${h.side_b}</div></div>
+    <div class="m-row"><div class="m-k">נושא</div><div class="m-v">${h.subject}</div></div>
+  `;
+  document.getElementById('mbg').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('mbg').classList.remove('open');
+}
+</script>
+</body>
+</html>

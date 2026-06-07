@@ -1,0 +1,5 @@
+requests
+requests-negotiate-sspi
+beautifulsoup4
+flask
+lxml

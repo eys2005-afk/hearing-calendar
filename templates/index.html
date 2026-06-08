@@ -157,7 +157,10 @@ body{font-family:'Segoe UI','Arial Hebrew',Arial,sans-serif;background:var(--par
   </div>
   <div class="tb-sep"></div>
   <div class="tb-stat" id="stat-total">סה"כ {{ total }} דיונים</div>
+  {% if last_sync %}<div class="tb-stat" style="font-size:11px;opacity:.75;">🔄 עודכן: {{ last_sync }}</div>{% endif %}
   <div class="tb-space"></div>
+  <div style="font-size:12px;opacity:.8;">{{ user_name }}</div>
+  <a href="/logout" style="color:rgba(255,255,255,.7);font-size:12px;text-decoration:none;border:1px solid rgba(255,255,255,.3);padding:4px 10px;border-radius:20px;">החלף</a>
   <div style="display:flex;align-items:center;gap:10px;font-size:12px;">
     <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;border-radius:2px;background:var(--ha);display:inline-block;"></span> אולם א</span>
     <span style="display:flex;align-items:center;gap:4px;"><span style="width:12px;height:12px;border-radius:2px;background:var(--hb);display:inline-block;"></span> אולם ב</span>

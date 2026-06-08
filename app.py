@@ -10,13 +10,8 @@ urllib3.disable_warnings()
 app = Flask(__name__)
 app.secret_key = 'hearing-calendar-secret'
 
-try:
-    from sync_to_supabase import SUPA_URL as _URL, SUPA_KEY as _KEY
-except Exception:
-    _URL, _KEY = '', ''
-
-SUPA_URL = os.environ.get('SUPA_URL') or _URL
-SUPA_KEY = os.environ.get('SUPA_KEY') or _KEY
+SUPA_URL = os.environ.get('SUPA_URL') or 'https://zeocbvzhwhpqnrmlmzyr.supabase.co'
+SUPA_KEY = os.environ.get('SUPA_KEY') or 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inplb2Nidnpod2hwcW5ybWxtenlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NTM1ODYsImV4cCI6MjA5NjQyOTU4Nn0.Igq--cRQxDO9ZQI7pDU2ONjg26ugZbh5Ij1J3eAxwvo'
 
 HEADERS = {
     'apikey': SUPA_KEY,

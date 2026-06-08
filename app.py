@@ -54,7 +54,7 @@ def _case_priority(subject: str) -> int:
     return 5
 
 
-def _dedup_by_couple(hearings: list[dict]) -> list[dict]:
+def _dedup_by_couple(hearings):
     """Keep only the highest-priority case per couple per day."""
     best = {}
     for h in hearings:

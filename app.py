@@ -66,7 +66,7 @@ def _dedup_by_couple(hearings):
     return [v[1] for v in best.values()]
 
 
-def fetch_from_supabase(from_date: str, to_date: str, court_id: str) -> list[dict]:
+def fetch_from_supabase(from_date, to_date, court_id):
     r = requests.get(
         f'{SUPA_URL}/rest/v1/hearings?select=data',
         headers=HEADERS,

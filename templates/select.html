@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>יומן דיונים — כניסה</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI','Arial Hebrew',Arial,sans-serif;background:#f5f0e8;display:flex;align-items:center;justify-content:center;height:100vh;direction:rtl;}
+.card{background:#fff;border-radius:12px;padding:40px;width:360px;box-shadow:0 8px 32px rgba(0,0,0,.12);border-top:4px solid #b8902a;}
+.emblem{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#0f2742,#1a3d60);border:3px solid #b8902a;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;}
+h1{text-align:center;font-size:18px;color:#0f2742;margin-bottom:6px;}
+.sub{text-align:center;font-size:12px;color:#8a8070;margin-bottom:28px;}
+.user-btn{width:100%;padding:14px 16px;margin-bottom:12px;border:2px solid #d4ccba;border-radius:8px;background:#f5f0e8;cursor:pointer;font-size:15px;font-weight:600;color:#1a1612;text-align:right;transition:all .15s;font-family:inherit;display:flex;align-items:center;gap:12px;}
+.user-btn:hover{border-color:#0f2742;background:#e6eef8;}
+.user-btn .icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.icon-a{background:#e6eef8;}
+.icon-b{background:#f8e6e6;}
+.user-info{flex:1;}
+.user-name{font-size:14px;font-weight:700;color:#0f2742;}
+.court-name{font-size:11px;color:#8a8070;margin-top:2px;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="emblem">⚖</div>
+  <h1>יומן דיונים</h1>
+  <div class="sub">בתי הדין הרבניים — בחר משתמש</div>
+  <form method="POST">
+    {% for key, user in users.items() %}
+    <button type="submit" name="user" value="{{ key }}" class="user-btn">
+      <div class="icon {{ 'icon-a' if loop.index == 1 else 'icon-b' }}">👤</div>
+      <div class="user-info">
+        <div class="user-name">{{ user.name }}</div>
+        <div class="court-name">{{ user.court_name }}</div>
+      </div>
+    </button>
+    {% endfor %}
+  </form>
+</div>
+</body>
+</html>

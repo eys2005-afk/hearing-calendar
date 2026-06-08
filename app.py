@@ -1,67 +1,26 @@
 import json
-import os
 import requests
 import urllib3
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request
 from datetime import datetime, timedelta
 
 urllib3.disable_warnings()
 
 app = Flask(__name__)
-app.secret_key = 'hearing-calendar-secret'
 
-SUPA_URL = os.environ.get('SUPA_URL') or 'https://zeocbvzhwhpqnrmlmzyr.supabase.co'
-SUPA_KEY = os.environ.get('SUPA_KEY') or 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inplb2Nidnpod2hwcW5ybWxtenlyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NTM1ODYsImV4cCI6MjA5NjQyOTU4Nn0.Igq--cRQxDO9ZQI7pDU2ONjg26ugZbh5Ij1J3eAxwvo'
+# ── Supabase credentials ───────────────────────────────────────────────────
+import os
+SUPA_URL = os.environ.get('SUPA_URL', '')
+SUPA_KEY = os.environ.get('SUPA_KEY', '')
 
 HEADERS = {
     'apikey': SUPA_KEY,
     'Authorization': f'Bearer {SUPA_KEY}',
 }
 
-USERS = {
-    'elchanan': {'name': 'אלחנן שמריה', 'court_id': '5',  'court_name': 'רחובות'},
-    'avi':      {'name': 'אבי אושרי',   'court_id': '12', 'court_name': 'בית הדין הגדול'},
-}
 
-
-def get_last_sync(court_id: str) -> str:
-    """Return the last sync time for the given court as a formatted string, or ''."""
-    try:
-        r = requests.get(
-            f'{SUPA_URL}/rest/v1/last_sync?id=eq.{court_id}&select=synced_at',
-            headers=HEADERS, timeout=5, verify=False,
-        )
-        rows = r.json()
-        if rows:
-            dt = datetime.fromisoformat(rows[0]['synced_at'])
-            return dt.strftime('%d/%m/%Y %H:%M')
-    except Exception:
-        pass
-    return ''
-
-
-def _case_priority(subject: str) -> int:
-    s = subject or ''
-    if 'גירושין' in s: return 1
-    if 'מזונות'  in s: return 2
-    if 'רכוש'    in s: return 3
-    if 'שהות'    in s: return 4
-    return 5
-
-
-def _dedup_by_couple(hearings):
-    """Keep only the highest-priority case per couple per day."""
-    best = {}
-    for h in hearings:
-        couple = frozenset([h['side_a'].strip(), h['side_b'].strip()])
-        key = (couple, h['date'])
-        p = _case_priority(h['subject'])
-        if key not in best or p < best[key][0]:
-            best[key] = (p, h)
-    return [v[1] for v in best.values()]
-
-
-def fetch_from_supabase(from_date, to_date, court_id):
+def fetch_from_supabase(from_date: str, to_date: str) -> list[dict]:
+    """Read hearings from Supabase for a date range (DD/MM/YYYY)."""
     r = requests.get(
         f'{SUPA_URL}/rest/v1/hearings?select=data',
         headers=HEADERS,
@@ -73,6 +32,7 @@ def fetch_from_supabase(from_date, to_date, court_id):
 
     all_rows = [row['data'] for row in r.json()]
 
+    # Filter by date range
     from_dt = datetime.strptime(from_date, '%d/%m/%Y')
     to_dt   = datetime.strptime(to_date,   '%d/%m/%Y')
 
@@ -83,10 +43,9 @@ def fetch_from_supabase(from_date, to_date, court_id):
         except Exception:
             return False
 
-    # Filter by court and date range
-    filtered = [h for h in all_rows
-                if str(h.get('court_id', '')) == str(court_id) and in_range(h)]
+    filtered = [h for h in all_rows if in_range(h)]
 
+    # Map from Supabase/friend format to our template format
     def remap(h):
         return {
             'assembly':    h.get('herkev') or h.get('assembly', ''),
@@ -99,42 +58,20 @@ def fetch_from_supabase(from_date, to_date, court_id):
             'file_number': h.get('tik') or h.get('file_number', ''),
         }
 
-    remapped = [remap(h) for h in filtered]
-    return _dedup_by_couple(remapped)
+    return [remap(h) for h in filtered]
 
 
 def _month_range(year: int, month: int):
     start = datetime(year, month, 1)
-    end   = datetime(year + 1, 1, 1) - timedelta(days=1) if month == 12 \
-            else datetime(year, month + 1, 1) - timedelta(days=1)
+    if month == 12:
+        end = datetime(year + 1, 1, 1) - timedelta(days=1)
+    else:
+        end = datetime(year, month + 1, 1) - timedelta(days=1)
     return start, end
-
-
-@app.route('/select', methods=['GET', 'POST'])
-def select_user():
-    if request.method == 'POST':
-        user_key = request.form.get('user')
-        if user_key in USERS:
-            session['user'] = user_key
-            return redirect(url_for('index'))
-    return render_template('select.html', users=USERS)
-
-
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('select_user'))
 
 
 @app.route('/')
 def index():
-    if 'user' not in session:
-        return redirect(url_for('select_user'))
-
-    user = USERS[session['user']]
-    court_id   = user['court_id']
-    court_name = user['court_name']
-
     today = datetime.today()
     year  = int(request.args.get('year',  today.year))
     month = int(request.args.get('month', today.month))
@@ -147,12 +84,13 @@ def index():
     hearings_by_date = {}
     all_hearings = []
     try:
-        all_hearings = fetch_from_supabase(from_date, to_date, court_id)
+        all_hearings = fetch_from_supabase(from_date, to_date)
         for h in all_hearings:
             hearings_by_date.setdefault(h['date'], []).append(h)
     except Exception as e:
         error = str(e)
 
+    # Build calendar weeks (Sunday first)
     first_weekday = (start.weekday() + 1) % 7
     weeks = []
     day = start - timedelta(days=first_weekday)
@@ -175,19 +113,19 @@ def index():
     next_month = month + 1 if month < 12 else 1
     next_year  = year if month < 12 else year + 1
 
+    month_name = start.strftime('%B %Y')
+
     return render_template(
         'index.html',
         weeks=weeks,
-        month_name=start.strftime('%B %Y'),
+        month_name=month_name,
         year=year, month=month,
         prev_year=prev_year, prev_month=prev_month,
         next_year=next_year, next_month=next_month,
         error=error,
         hearings_json=json.dumps(all_hearings, ensure_ascii=False),
         total=len(all_hearings),
-        court_name=court_name,
-        user_name=user['name'],
-        last_sync=get_last_sync(court_id),
+        court_name='בית הדין הרבני',
     )
 
 

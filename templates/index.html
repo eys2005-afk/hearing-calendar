@@ -86,9 +86,11 @@ body{font-family:'Segoe UI','Arial Hebrew',Arial,sans-serif;background:var(--par
 .today .cell-num{background:var(--navy);color:#fff;}
 .cell-count{font-size:9px;color:var(--text3);margin-bottom:3px;font-weight:600;}
 .cell-pill{font-size:11px;padding:4px 8px;border-radius:4px;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between;font-weight:600;white-space:nowrap;}
-.pill-א{background:var(--ha);color:#fff;}
-.pill-ב{background:var(--hb);color:#fff;}
-.pill-ג{background:var(--hg);color:#fff;}
+.pill-א,.pill-ד,.pill-ז,.pill-י{background:var(--ha);color:#fff;}
+.pill-ב,.pill-ה,.pill-ח{background:var(--hb);color:#fff;}
+.pill-ג,.pill-ו,.pill-ט{background:var(--hg);color:#fff;}
+/* fallback for any other assembly */
+[class^="pill-"]{background:var(--navy3);color:#fff;}
 .pill-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.6);flex-shrink:0;}
 
 /* DAY VIEW */
@@ -106,9 +108,16 @@ body{font-family:'Segoe UI','Arial Hebrew',Arial,sans-serif;background:var(--par
 .hall-col{flex:1;min-width:0;border-left:1px solid var(--border);}
 .hall-col:last-child{border-left:none;}
 .hall-hdr{padding:10px 14px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
-.hh-א{background:var(--ha-bg);color:var(--ha);}
-.hh-ב{background:var(--hb-bg);color:var(--hb);}
-.hh-ג{background:var(--hg-bg);color:var(--hg);}
+.hh-א,.hh-ד,.hh-ז,.hh-י{background:var(--ha-bg);color:var(--ha);}
+.hh-ב,.hh-ה,.hh-ח{background:var(--hb-bg);color:var(--hb);}
+.hh-ג,.hh-ו,.hh-ט{background:var(--hg-bg);color:var(--hg);}
+[class^="hh-"]{background:var(--parch2);color:var(--navy);}
+.asm-btn{padding:5px 14px;border:1px solid var(--border2);border-radius:var(--rs);font-size:12px;cursor:pointer;font-family:inherit;color:var(--text2);background:var(--surface);transition:all .12s;}
+.asm-btn:hover{background:var(--parch);}
+.asm-btn-א.on,.asm-btn-ד.on,.asm-btn-ז.on,.asm-btn-י.on{background:var(--ha);color:#fff;border-color:var(--ha);}
+.asm-btn-ב.on,.asm-btn-ה.on,.asm-btn-ח.on{background:var(--hb);color:#fff;border-color:var(--hb);}
+.asm-btn-ג.on,.asm-btn-ו.on,.asm-btn-ט.on{background:var(--hg);color:#fff;border-color:var(--hg);}
+.asm-btn:not(.on){opacity:.5;}
 .hall-cnt{background:var(--surface);border-radius:20px;padding:1px 8px;font-size:11px;font-weight:600;}
 .case-row{padding:10px 14px;border-bottom:1px solid var(--parch2);cursor:pointer;display:flex;gap:11px;align-items:flex-start;transition:background .1s;}
 .case-row:last-child{border-bottom:none;}

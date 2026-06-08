@@ -56,7 +56,7 @@ def supabase_insert(rows: list):
         raise RuntimeError(f'Insert failed: {r.status_code} {r.text}')
 
 
-def map_hearing(h: dict) -> dict:
+def map_hearing(h: dict, court_id: str = '5') -> dict:
     """Convert our fetcher format to the friend's JS format."""
     herkev = h['assembly']
     hall   = HALL_MAP.get(herkev, 'א')
@@ -65,10 +65,11 @@ def map_hearing(h: dict) -> dict:
     date   = h['date']
 
     hh, mm = (int(x) for x in time.split(':')) if ':' in time else (0, 0)
-    key = f"{tik}|{herkev}|{date}|{time}"
+    key = f"{court_id}|{tik}|{herkev}|{date}|{time}"
 
     return {
         'key':      key,
+        'court_id': court_id,
         'tik':      tik,
         'herkev':   herkev,
         'hall':     hall,
@@ -85,49 +86,70 @@ def map_hearing(h: dict) -> dict:
     }
 
 
-def main():
-    now = datetime.now()
-    # Fetch current month + next month
-    months = [
-        (now.year, now.month),
-        ((now.month == 12 and (now.year + 1, 1)) or (now.year, now.month + 1))[0]
-        if now.month == 12 else (now.year, now.month + 1),
-    ]
+# ── Courts to sync — all use the same Supabase ─────────────────────────────
+COURTS = [
+    ('5',  'רחובות'),
+    ('12', 'בית הדין הגדול'),
+]
+
+
+def supabase_delete_court(court_id: str):
+    """Delete only this court's hearings."""
+    r = requests.delete(
+        f'{SUPA_URL}/rest/v1/hearings?id=like.{court_id}|*',
+        headers=HEADERS,
+        timeout=30,
+        verify=False,
+    )
+    if r.status_code not in (200, 204):
+        raise RuntimeError(f'Delete failed: {r.status_code} {r.text}')
+
+
+def sync_court(court_id: str, court_name: str, now: datetime):
+    print(f'\n=== Syncing {court_name} (court {court_id}) ===')
+
+    months = [(now.year, now.month)]
+    for delta in (1, 2):
+        y, m = now.year, now.month + delta
+        if m > 12: y += 1; m -= 12
+        months.append((y, m))
 
     all_hearings = []
     for year, month in months:
         start = datetime(year, month, 1)
-        if month == 12:
-            end = datetime(year + 1, 1, 1) - timedelta(days=1)
-        else:
-            end = datetime(year, month + 1, 1) - timedelta(days=1)
-
+        end   = datetime(year + 1, 1, 1) - timedelta(days=1) if month == 12 \
+                else datetime(year, month + 1, 1) - timedelta(days=1)
         from_date = start.strftime('%d/%m/%Y')
         to_date   = end.strftime('%d/%m/%Y')
-
-        print(f'Fetching {from_date} → {to_date}...')
+        print(f'  Fetching {from_date} → {to_date}...')
         try:
-            hearings = fetch_hearings(from_date, to_date)
+            hearings = fetch_hearings(from_date, to_date, court_id=court_id)
             print(f'  Got {len(hearings)} hearings')
             all_hearings.extend(hearings)
         except Exception as e:
             print(f'  ERROR: {e}')
 
     if not all_hearings:
-        print('No hearings fetched — aborting.')
+        print('  No hearings — skipping.')
         return
 
-    # Convert to Supabase row format and deduplicate by id
     seen = {}
     for h in all_hearings:
-        m = map_hearing(h)
+        m = map_hearing(h, court_id=court_id)
         seen[m['key']] = {'id': m['key'], 'data': m, 'updated_at': now.isoformat()}
     rows = list(seen.values())
 
-    print(f'\nSaving {len(rows)} unique hearings to Supabase...')
-    supabase_delete()
+    print(f'  Saving {len(rows)} unique hearings...')
+    supabase_delete_court(court_id)
     supabase_insert(rows)
-    print(f'Done at {now.strftime("%d/%m/%Y %H:%M")} ✓')
+    print(f'  Done ✓')
+
+
+def main():
+    now = datetime.now()
+    for court_id, court_name in COURTS:
+        sync_court(court_id, court_name, now)
+    print(f'\nAll done at {now.strftime("%d/%m/%Y %H:%M")} ✓')
 
 
 if __name__ == '__main__':

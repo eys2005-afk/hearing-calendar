@@ -2,141 +2,212 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>יומן דיונים — בית דין רחובות</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: Arial, sans-serif; background: #f0f2f5; color: #222; }
 
+  /* ── Header ── */
   header {
     background: #1a3a6b;
     color: #fff;
-    padding: 16px 24px;
+    padding: 12px 16px;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     flex-wrap: wrap;
   }
-  header h1 { font-size: 1.3rem; flex: 1; }
+  header h1 { font-size: 1.1rem; flex: 1; min-width: 160px; }
 
-  .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .controls select, .controls input, .controls button {
+  .controls { display: flex; gap: 8px; align-items: center; }
+  .controls input {
     padding: 6px 10px;
     border-radius: 4px;
     border: none;
     font-size: 0.95rem;
+    width: 60px;
   }
   .controls button {
+    padding: 8px 14px;
     background: #f5a623;
     color: #fff;
+    border: none;
+    border-radius: 4px;
     cursor: pointer;
     font-weight: bold;
+    font-size: 0.95rem;
+    min-width: 44px;
+    min-height: 44px;
   }
-  .controls button:hover { background: #d4891a; }
+  .controls button:active { background: #d4891a; }
 
-  #status { padding: 8px 24px; font-size: 0.85rem; color: #555; min-height: 28px; }
+  /* ── Status ── */
+  #status { padding: 6px 16px; font-size: 0.82rem; color: #555; min-height: 26px; }
   #status.error { color: #c0392b; }
 
-  /* ── Calendar grid ── */
-  .calendar-wrap { padding: 16px 24px; }
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    gap: 14px;
+    padding: 0 16px 10px;
+    font-size: 0.8rem;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+  .legend-dot.a { background: #1a73e8; }
+  .legend-dot.b { background: #34a853; }
+  .legend-dot.c { background: #ea4335; }
 
+  /* ── Month nav ── */
+  .calendar-wrap { padding: 0 12px 16px; }
   .month-nav {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
+    justify-content: space-between;
+    margin-bottom: 10px;
   }
   .month-nav button {
     background: #1a3a6b;
     color: #fff;
     border: none;
-    border-radius: 4px;
-    padding: 4px 12px;
+    border-radius: 6px;
+    width: 44px;
+    height: 44px;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  .month-nav button:hover { background: #2a5298; }
-  #month-label { font-size: 1.1rem; font-weight: bold; }
+  .month-nav button:active { background: #2a5298; }
+  #month-label { font-size: 1.05rem; font-weight: bold; }
 
+  /* ── Calendar grid ── */
   .calendar {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
+    gap: 3px;
   }
   .day-header {
     background: #1a3a6b;
     color: #fff;
     text-align: center;
-    padding: 6px 0;
-    font-size: 0.8rem;
+    padding: 5px 0;
+    font-size: 0.75rem;
     border-radius: 4px;
   }
   .day-cell {
     background: #fff;
     border-radius: 6px;
-    min-height: 110px;
-    padding: 6px;
-    position: relative;
+    padding: 4px;
     border: 1px solid #dde;
-    overflow: hidden;
-  }
-  .day-cell.empty { background: transparent; border: none; }
-  .day-cell.today { border-color: #f5a623; box-shadow: 0 0 0 2px #f5a623; }
-  .day-num {
-    font-size: 0.75rem;
-    font-weight: bold;
-    color: #888;
-    margin-bottom: 4px;
-  }
-
-  /* Hearing chips */
-  .hearing-chip {
-    background: #e8f0fe;
-    border-right: 3px solid #1a73e8;
-    border-radius: 3px;
-    padding: 2px 4px;
-    margin-bottom: 3px;
-    font-size: 0.72rem;
     cursor: pointer;
-    line-height: 1.3;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    transition: background 0.1s;
   }
-  .hearing-chip:hover { background: #c8dcfd; }
-  .hearing-chip.assembly-ב { border-color: #34a853; background: #e6f4ea; }
-  .hearing-chip.assembly-ג { border-color: #ea4335; background: #fce8e6; }
+  .day-cell:active { background: #eef2ff; }
+  .day-cell.empty { background: transparent; border: none; cursor: default; }
+  .day-cell.today { border-color: #f5a623; box-shadow: 0 0 0 2px #f5a623; }
+  .day-cell.has-hearings { background: #fafbff; }
 
-  /* Tooltip / detail panel */
-  #detail {
+  .day-num {
+    font-size: 0.78rem;
+    font-weight: bold;
+    color: #666;
+    margin-bottom: 3px;
+    text-align: center;
+  }
+  .day-cell.today .day-num {
+    background: #f5a623;
+    color: #fff;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 3px;
+  }
+
+  /* Dots for mobile, chips for desktop */
+  .dots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    justify-content: center;
+  }
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+  }
+  .dot.a { background: #1a73e8; }
+  .dot.b { background: #34a853; }
+  .dot.c { background: #ea4335; }
+
+  /* Desktop chips — hidden on mobile */
+  .chips { display: none; }
+
+  /* ── Bottom sheet (mobile day detail) ── */
+  #sheet-overlay {
     display: none;
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 50;
+  }
+  #bottom-sheet {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 0;
     background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-    padding: 20px 24px;
-    z-index: 100;
-    min-width: 320px;
-    max-width: 480px;
-    direction: rtl;
+    border-radius: 16px 16px 0 0;
+    z-index: 51;
+    padding: 0 0 env(safe-area-inset-bottom, 16px);
+    max-height: 70vh;
+    overflow-y: auto;
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.15);
+    transition: transform 0.25s ease;
   }
-  #detail h3 { margin-bottom: 12px; color: #1a3a6b; }
-  #detail table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-  #detail td { padding: 4px 8px; }
-  #detail td:first-child { font-weight: bold; color: #555; white-space: nowrap; }
-  #detail .close-btn {
-    position: absolute;
-    top: 10px;
-    left: 14px;
-    background: none;
-    border: none;
-    font-size: 1.2rem;
+  .sheet-handle {
+    width: 40px; height: 4px;
+    background: #ccc;
+    border-radius: 2px;
+    margin: 10px auto 0;
+  }
+  .sheet-header {
+    padding: 10px 16px 8px;
+    font-weight: bold;
+    font-size: 1rem;
+    color: #1a3a6b;
+    border-bottom: 1px solid #eee;
+  }
+  .sheet-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
     cursor: pointer;
-    color: #888;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
   }
+  .sheet-item:active { background: #f5f7ff; }
+  .sheet-item-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+  .sheet-item-body { flex: 1; }
+  .sheet-item-title { font-size: 0.9rem; font-weight: bold; }
+  .sheet-item-sub { font-size: 0.8rem; color: #666; margin-top: 2px; }
+  .sheet-empty { padding: 24px 16px; text-align: center; color: #999; font-size: 0.9rem; }
+
+  /* ── Detail popup ── */
   #overlay {
     display: none;
     position: fixed;
@@ -144,31 +215,82 @@
     background: rgba(0,0,0,0.3);
     z-index: 99;
   }
+  #detail {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+    padding: 20px 20px 16px;
+    z-index: 100;
+    width: min(92vw, 460px);
+    direction: rtl;
+  }
+  #detail h3 { margin-bottom: 12px; color: #1a3a6b; font-size: 1rem; }
+  #detail table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  #detail td { padding: 5px 8px; }
+  #detail td:first-child { font-weight: bold; color: #555; white-space: nowrap; }
+  #detail .close-btn {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    color: #888;
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+  }
 
-  /* Assembly legend */
-  .legend {
-    display: flex;
-    gap: 16px;
-    padding: 0 24px 12px;
-    font-size: 0.82rem;
+  /* ── Desktop overrides ── */
+  @media (min-width: 600px) {
+    .calendar-wrap { padding: 0 24px 24px; }
+    header { padding: 14px 24px; }
+    header h1 { font-size: 1.3rem; }
+    #status { padding: 8px 24px; }
+    .legend { padding: 0 24px 12px; }
+
+    .day-cell { min-height: 110px; padding: 6px; }
+    .day-num { font-size: 0.75rem; text-align: right; }
+    .day-cell.today .day-num {
+      background: none; color: #f5a623;
+      border-radius: 0; width: auto; height: auto;
+      display: block; margin: 0 0 4px;
+    }
+
+    .dots { display: none; }
+    .chips { display: block; }
+
+    .hearing-chip {
+      background: #e8f0fe;
+      border-right: 3px solid #1a73e8;
+      border-radius: 3px;
+      padding: 2px 4px;
+      margin-bottom: 3px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .hearing-chip:hover { background: #c8dcfd; }
+    .hearing-chip.b { border-color: #34a853; background: #e6f4ea; }
+    .hearing-chip.c { border-color: #ea4335; background: #fce8e6; }
   }
-  .legend-item { display: flex; align-items: center; gap: 6px; }
-  .legend-dot {
-    width: 12px; height: 12px; border-radius: 2px;
-    border-right: 3px solid;
-  }
-  .legend-dot.a { background: #e8f0fe; border-color: #1a73e8; }
-  .legend-dot.b { background: #e6f4ea; border-color: #34a853; }
-  .legend-dot.c { background: #fce8e6; border-color: #ea4335; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>יומן דיונים — בית דין אזורי רחובות</h1>
+  <h1>יומן דיונים — בית דין רחובות</h1>
   <div class="controls">
     <label>משתמש:
-      <input id="userId" type="text" value="1" style="width:60px">
+      <input id="userId" type="text" value="1" inputmode="numeric">
     </label>
     <button onclick="loadHearings()">רענן</button>
   </div>
@@ -184,13 +306,22 @@
 
 <div class="calendar-wrap">
   <div class="month-nav">
-    <button onclick="changeMonth(-1)">&#8250;</button>
+    <button onclick="changeMonth(-1)" aria-label="חודש קודם">&#8250;</button>
     <span id="month-label"></span>
-    <button onclick="changeMonth(1)">&#8249;</button>
+    <button onclick="changeMonth(1)" aria-label="חודש הבא">&#8249;</button>
   </div>
   <div class="calendar" id="calendar"></div>
 </div>
 
+<!-- Bottom sheet (mobile) -->
+<div id="sheet-overlay" onclick="closeSheet()"></div>
+<div id="bottom-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header" id="sheet-title"></div>
+  <div id="sheet-list"></div>
+</div>
+
+<!-- Detail popup -->
 <div id="overlay" onclick="closeDetail()"></div>
 <div id="detail">
   <button class="close-btn" onclick="closeDetail()">✕</button>
@@ -201,15 +332,17 @@
 <script>
   const HE_MONTHS = ["ינואר","פברואר","מרץ","אפריל","מאי","יוני",
                      "יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר"];
-  const DAY_NAMES = ["א׳","ב׳","ג׳","ד׳","ה׳","ו׳","ש׳"]; // Sun-Sat
+  const HE_DAYS   = ["א׳","ב׳","ג׳","ד׳","ה׳","ו׳","ש׳"];
+  const COLORS    = { "א": "#1a73e8", "ב": "#34a853", "ג": "#ea4335" };
 
   let currentYear, currentMonth;
-  let allHearings = []; // [{date:"DD/MM/YYYY", ...}, ...]
+  let allHearings = [];
 
   function init() {
+    const params = new URLSearchParams(location.search);
     const now = new Date();
-    currentYear = now.getFullYear();
-    currentMonth = now.getMonth() + 1;
+    currentYear  = parseInt(params.get("year"))  || now.getFullYear();
+    currentMonth = parseInt(params.get("month")) || now.getMonth() + 1;
     loadHearings();
   }
 
@@ -231,17 +364,16 @@
     setStatus("טוען נתונים...");
     updateLabel();
     try {
-      const res = await fetch(`/api/hearings?user_id=${encodeURIComponent(userId)}&year=${currentYear}&month=${currentMonth}`);
+      const res  = await fetch(`/api/hearings?user_id=${encodeURIComponent(userId)}&year=${currentYear}&month=${currentMonth}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || res.statusText);
       allHearings = data;
       setStatus(`נטענו ${data.length} דיונים`);
-      renderCalendar();
     } catch(e) {
       setStatus("שגיאה: " + e.message, true);
       allHearings = [];
-      renderCalendar();
     }
+    renderCalendar();
   }
 
   function updateLabel() {
@@ -249,82 +381,143 @@
       `${HE_MONTHS[currentMonth-1]} ${currentYear}`;
   }
 
+  function padZ(n) { return String(n).padStart(2, "0"); }
+
+  function assemblyKey(h) {
+    return (h.assembly || "").replace(/הרכב\s*/,"").trim();
+  }
+
   function hearingsForDate(dateStr) {
     return allHearings.filter(h => h.date === dateStr);
   }
 
-  function padZ(n) { return String(n).padStart(2, "0"); }
+  const isMobile = () => window.innerWidth < 600;
 
   function renderCalendar() {
     const cal = document.getElementById("calendar");
     cal.innerHTML = "";
 
-    // Day headers: Sun=0 ... Sat=6
-    DAY_NAMES.forEach(d => {
+    HE_DAYS.forEach(d => {
       const h = document.createElement("div");
       h.className = "day-header";
       h.textContent = d;
       cal.appendChild(h);
     });
 
-    const firstDay = new Date(currentYear, currentMonth - 1, 1).getDay(); // 0=Sun
+    const firstDay    = new Date(currentYear, currentMonth - 1, 1).getDay();
     const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
-    const today = new Date();
-    const todayStr = `${padZ(today.getDate())}/${padZ(today.getMonth()+1)}/${today.getFullYear()}`;
+    const now         = new Date();
+    const todayStr    = `${padZ(now.getDate())}/${padZ(now.getMonth()+1)}/${now.getFullYear()}`;
 
-    // Empty cells before day 1
     for (let i = 0; i < firstDay; i++) {
-      const empty = document.createElement("div");
-      empty.className = "day-cell empty";
-      cal.appendChild(empty);
+      const e = document.createElement("div");
+      e.className = "day-cell empty";
+      cal.appendChild(e);
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
-      const dateStr = `${padZ(day)}/${padZ(currentMonth)}/${currentYear}`;
-      const cell = document.createElement("div");
-      cell.className = "day-cell" + (dateStr === todayStr ? " today" : "");
+      const dateStr  = `${padZ(day)}/${padZ(currentMonth)}/${currentYear}`;
+      const dayItems = hearingsForDate(dateStr);
+      const cell     = document.createElement("div");
+
+      cell.className = "day-cell"
+        + (dateStr === todayStr ? " today" : "")
+        + (dayItems.length > 0  ? " has-hearings" : "");
 
       const num = document.createElement("div");
       num.className = "day-num";
       num.textContent = day;
       cell.appendChild(num);
 
-      hearingsForDate(dateStr).forEach(h => {
-        const chip = document.createElement("div");
-        const assembly = (h.assembly || "").replace("הרכב","").trim();
-        chip.className = `hearing-chip assembly-${assembly}`;
-        chip.title = `${h.case_number} | ${h.parties}`;
-        chip.textContent = `${h.time} ${h.case_number}`;
-        chip.onclick = () => showDetail(h);
-        cell.appendChild(chip);
-      });
+      // Dots (mobile)
+      if (dayItems.length > 0) {
+        const dots = document.createElement("div");
+        dots.className = "dots";
+        dayItems.slice(0, 6).forEach(h => {
+          const dot = document.createElement("div");
+          dot.className = "dot";
+          dot.style.background = COLORS[assemblyKey(h)] || "#999";
+          dots.appendChild(dot);
+        });
+        cell.appendChild(dots);
+
+        // Chips (desktop)
+        const chips = document.createElement("div");
+        chips.className = "chips";
+        dayItems.forEach(h => {
+          const chip = document.createElement("div");
+          const key = assemblyKey(h);
+          chip.className = `hearing-chip ${key}`;
+          chip.title = `${h.case_number} | ${h.parties}`;
+          chip.textContent = `${h.time} ${h.case_number}`;
+          chip.onclick = (e) => { e.stopPropagation(); showDetail(h); };
+          chips.appendChild(chip);
+        });
+        cell.appendChild(chips);
+      }
+
+      cell.onclick = () => {
+        if (isMobile()) openSheet(dateStr, dayItems);
+        else if (dayItems.length === 1) showDetail(dayItems[0]);
+      };
 
       cal.appendChild(cell);
     }
   }
 
+  /* ── Bottom sheet ── */
+  function openSheet(dateStr, items) {
+    const [d, m, y] = dateStr.split("/");
+    document.getElementById("sheet-title").textContent =
+      `${parseInt(d)} ב${HE_MONTHS[parseInt(m)-1]} ${y}`;
+
+    const list = document.getElementById("sheet-list");
+    if (items.length === 0) {
+      list.innerHTML = `<div class="sheet-empty">אין דיונים ביום זה</div>`;
+    } else {
+      list.innerHTML = items.map((h, i) => {
+        const key   = assemblyKey(h);
+        const color = COLORS[key] || "#999";
+        return `
+          <div class="sheet-item" onclick="showDetail(allHearings.find(x=>x.case_number==='${h.case_number}' && x.date==='${h.date}' && x.time==='${h.time}'))">
+            <div class="sheet-item-dot" style="background:${color}"></div>
+            <div class="sheet-item-body">
+              <div class="sheet-item-title">${h.time} — ${h.case_number}</div>
+              <div class="sheet-item-sub">${h.parties || ""}${h.assembly ? " · " + h.assembly : ""}${h.room ? " · חדר " + h.room : ""}</div>
+            </div>
+          </div>`;
+      }).join("");
+    }
+
+    document.getElementById("sheet-overlay").style.display = "block";
+    document.getElementById("bottom-sheet").style.display  = "block";
+  }
+
+  function closeSheet() {
+    document.getElementById("sheet-overlay").style.display = "none";
+    document.getElementById("bottom-sheet").style.display  = "none";
+  }
+
+  /* ── Detail popup ── */
   function showDetail(h) {
+    if (!h) return;
+    closeSheet();
     document.getElementById("detail-title").textContent = h.case_number || "דיון";
     const rows = [
-      ["תאריך", h.date],
-      ["שעה", h.time],
-      ["תיק", h.case_number],
-      ["צדדים", h.parties],
-      ["הרכב", h.assembly],
-      ["שופט", h.judge],
-      ["חדר", h.room],
+      ["תאריך", h.date], ["שעה", h.time], ["תיק", h.case_number],
+      ["צדדים", h.parties], ["הרכב", h.assembly], ["שופט", h.judge], ["חדר", h.room],
     ];
     document.getElementById("detail-table").innerHTML = rows
       .filter(([,v]) => v)
       .map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`)
       .join("");
     document.getElementById("overlay").style.display = "block";
-    document.getElementById("detail").style.display = "block";
+    document.getElementById("detail").style.display  = "block";
   }
 
   function closeDetail() {
     document.getElementById("overlay").style.display = "none";
-    document.getElementById("detail").style.display = "none";
+    document.getElementById("detail").style.display  = "none";
   }
 
   init();
